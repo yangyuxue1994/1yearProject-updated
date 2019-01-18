@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="jspsych-6.0.5/jspsych.js"></script>
+    <script src="jspsych-6.0.5/plugins/jspsych-html-keyboard-response.js"></script>
+    <script src="jspsych-6.0.5/plugins/jspsych-image-button-response.js"></script>
+    <script src="jspsych-6.0.5/plugins/jspsych-survey-text.js"></script>
+    <script src="jspsych-6.0.5/plugins/jspsych-image-text.js"></script>
+    <script src="jspsych-6.0.5/plugins/jspsych-categorize-image.js"></script>
+    <link href="jspsych-6.0.5/css/jspsych.css" rel="stylesheet" type="text/css"></link>
+	
+	
+    <style>
+      img { width: 300px; }
+    </style>
+  </head>
+  <body></body>
+  <script>
+
+  var timeline = [];
+
+  
+ /* collect subject info*/
+  var subject_id = 001;
+  var condition_assignment = jsPsych.randomization.sampleWithoutReplacement(['conditionA', 'conditionB', 'conditionC', 'conditionD'], 1)[0];
+  
+  jsPsych.data.addProperties({
+    subject: subject_id,
+    condition: condition_assignment
+  });
+  
+/* Welcome */
+  var welcome = {
+	  type: "html-keyboard-response",
+      stimulus: "Welcome to the experiment. Press any key to begin.",
+	  timing_post_trial:2000
+  };
+  timeline.push(welcome);
+  
+/* Instruction */
+   var instructions = {
+     type: "html-keyboard-response",
+     stimulus: "<h1>INSTRUCTION</h1>"+
+	   	 "<p>In this experiment, a picture and a sentence will appear in the center " +
+         "of the screen.</p><p>You need to iedntify if the sentence correctly describe the " +
+         "picture.</p>" +
+         "<p>If the sentence doesn't describes the sentence, click <strong>NO</strong> " + 
+	   	 "button as fast as you can.</p>" +
+         "<p>If the sentence describes the sentence, click <strong> YES </strong> button as " +
+         "fast as you can.</p>" +
+         "<div style='width: 700px;'>"+ "</br>" +
+         "<p>Now, if you're ready for the experiment, press any key to begin.</p>",
+     post_trial_gap: 2000
+   };
+   timeline.push(instructions);
+   
+   /*fixation*/
+  var fixation = {
+    type: 'html-keyboard-response',
+    stimulus: '<div style="font-size:60px;">+</div>',
+    choices: jsPsych.NO_KEYS,
+    trial_duration: 1000,
+  };
+
+/* Prac trials */
+   function dispPracTrials() {
+ 	  var numTrials = 4;
+ 	  var targ_pic = ['img/t1.png','img/t2.png','img/t3.png','img/t4.png'];
+	  var prime_pic = ['img/P01.jpg','img/P02.jpg','img/P03.jpg','img/P04.jpg'];
+ 	  var prime_s = ['The nun is chasing the sailor.',
+ 	  'The girl is holding the flower',
+ 	  'The theft is chased by the waitress.',
+	  'The boy is kicking the ball.'];
+	  var prime_ans = ['y','n','y','n'];
+	  	  
+	  for (i=0; i<numTrials; i++) {
+		  /* prime with feedback */
+		  var currPrime = {
+		    type: 'categorize-image',
+		    stimulus: prime_pic[i],
+			stimulus_duration: 5000,
+		    key_answer: jsPsych.pluginAPI.convertKeyCharacterToKeyCode(prime_ans[i]),
+		    choices: [jsPsych.pluginAPI.convertKeyCharacterToKeyCode('Y'), jsPsych.pluginAPI.convertKeyCharacterToKeyCode('N')],
+		    correct_text: "<h1>Correct.</h1>",
+		    incorrect_text: "<h1>Incorrect.</h1>",
+		    prompt: "<p>Does the sentence correctly describe the picture? </br> Press Y or N. </p></br></br><h1>"+prime_s[i]+"</h1>",
+			show_stim_with_feedback: false, // not show sti with feedback
+		    force_correct_button_press: false,
+			  data: {isPractice: true}
+		  };
+		  
+		  /* target */
+		  var currTarget = {
+			  type: 'image-text',
+			  stimulus: targ_pic[i],
+			  questions: [
+				  {prompt: 'Please describe the picture in your words: ',
+				  value: '',
+				  row: 5,
+				  column: 50}],
+				  data: {stimulus:targ_pic[i],isPractice: false}
+		  };
+		  timeline.push(fixation, currPrime, currTarget);
+	  };
+   }; 
+   ();
+ 
+/* Real trials */
+ 	function dispRealTrials(){
+	  var numTrials = 2;
+	  var targ_pic = ['img/t1.png','img/t2.png','img/t3.png','img/t4.png'];
+	  var prime_pic = ['img/P01.jpg','img/P02.jpg','img/P03.jpg','img/P04.jpg'];
+ 	  var prime_s = ['The nun is chasing the sailor.',
+ 	  'The girl is holding the flower',
+ 	  'The theft is chased by the waitress.',
+	  'The boy is kicking the ball.'];
+	  var prime_ans = ['y','n','y','n'];
+	
+	  for (i=0; i<numTrials; i++) {
+		  /*real prime without feedback*/
+		  console.log('in real trial...')
+		  var currPrime = {
+		    type: 'categorize-image',
+		    stimulus: prime_pic[i],
+			stimulus_duration: 5000,
+		    key_answer: jsPsych.pluginAPI.convertKeyCharacterToKeyCode(prime_ans[i]),
+		    choices: [jsPsych.pluginAPI.convertKeyCharacterToKeyCode('Y'), jsPsych.pluginAPI.convertKeyCharacterToKeyCode('N')],
+		    prompt: "<p>Does the sentence correctly describe the picture? </br> Press Y or N. </p></br></br><h1>"+prime_s[i]+"</h1>",
+			show_stim_with_feedback: false, // not show sti with feedback
+		    show_feedback_on_timeout: false,
+		    force_correct_button_press: false,
+			  feedback_duration:0,
+			  data:{isPractice: false}
+		  };
+		  var currTarget = {
+			  type: 'image-text',
+			  stimulus: targ_pic[i],
+			  questions: [
+				  {prompt: 'Please describe the picture in your words: ',
+				  value: '',
+				  row: 5,
+				  column: 50}],
+			  data: {stimulus:targ_pic[i],isPractice: false}
+		  };		
+		   
+		  timeline.push(fixation, currPrime, currTarget);
+  		}; // end of for loop
+		// return; // end of function
+	};
+	
+/* Display all trials */
+	dispRealTrials();
+	
+/* init exp */
+	jsPsych.init({
+		timeline: timeline,
+		on_finish: function(){
+		jsPsych.data.displayData();
+		mydata = jsPsych.data.get().filter([{trial_type:'categorize-image'},{trial_type:'image-text'}]);
+		mydata.localSave('csv','mydata.csv');
+		// console.log('all my data:' + jsPsych.data.get().csv());	
+	}
+  });
+  
+  // /* mturk parts*/
+  // var turkInfo = jsPsych.turkInfo();
+  // if(turkInfo.previewMode && !turkInfo.outsideTurk) {
+  //   $('#turkInfo').html('<a href="link_to_experiment.html" target="_blank">Click Here to Start Experiment</a>');
+  // }
+  // // workerID
+  // turkInfo.workerId
+  //
+  // // hitID
+  // turkInfo.hitId
+  //
+  // // assignmentID
+  // turkInfo.assignmentId
+  //
+  // function sendData() {
+  //   jsPsych.turk.submitToTurk({
+  //     code: document.getElementById('code').value
+  //   });
+  // }
+  
+  
+
+  </script>
+</html>
